@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valentine's Chat</title>
+    <title>Group Chat - Multiple Rooms</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -97,29 +97,6 @@
             background-color: rgba(255, 204, 255, 0.3);
             margin-left: 40px;
         }
-
-        /* Floating hearts animation */
-        @keyframes floatHeart {
-            0% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-        }
-
-        .heart-floating {
-            position: absolute;
-            font-size: 36px;
-            color: #ff4d6a;
-            animation: floatHeart 2s infinite;
-        }
-
-        .heart-floating:nth-child(odd) {
-            animation-duration: 3s;
-        }
     </style>
 </head>
 <body>
@@ -130,33 +107,27 @@
         <button id="send-btn">
             <span class="heart-icon">❤️</span>Send
         </button>
+        <div id="room-info"></div>
     </div>
-
-    <!-- Floating hearts animation -->
-    <div class="heart-floating" style="top: 20px; left: 50px;">❤️</div>
-    <div class="heart-floating" style="top: 50px; left: 200px;">❤️</div>
-    <div class="heart-floating" style="top: 100px; left: 100px;">❤️</div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
 
-        // Send message when user clicks send button
-        document.getElementById("send-btn").onclick = function() {
-            const message = document.getElementById("message-input").value;
-            socket.emit("send-message", message);
-            document.getElementById("message-input").value = "";
-        };
-
-        // Listen for incoming messages
-        socket.on("receive-message", (message) => {
+        // Display the room the user is connected to
+        socket.on('receive-message', (message) => {
             const messagesDiv = document.getElementById("messages");
+            const roomInfo = document.getElementById("room-info");
+            
+            // Display room information
+            roomInfo.textContent = message;
+
+            // Display the message in the chat
             const newMessage = document.createElement("div");
             newMessage.classList.add("message");
 
             // Randomly choose whether this is the sender or receiver's message
             const isSender = Math.random() > 0.5;
-
             if (isSender) {
                 newMessage.classList.add("sender");
             } else {
@@ -169,6 +140,13 @@
             // Scroll to the bottom of the chat window
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
+
+        // Send message when user clicks send button
+        document.getElementById("send-btn").onclick = function() {
+            const message = document.getElementById("message-input").value;
+            socket.emit("send-message", message);
+            document.getElementById("message-input").value = "";
+        };
     </script>
 
 </body>

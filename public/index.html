@@ -113,6 +113,24 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let username = '';
+        let gender = '';
+
+        // Ask the user for their username and gender when the page loads
+        function getUsernameAndGender() {
+            // Prompt for username
+            username = prompt("Please enter your username:");
+            if (!username) {
+                username = 'User_' + Math.floor(Math.random() * 1000);
+            }
+
+            // Prompt for gender
+            gender = prompt("Please select your gender (Boy/Girl):");
+            if (!gender) {
+                gender = 'Boy'; // Default to Boy if no input is given
+            }
+            socket.emit('set-username-and-gender', { username, gender }); // Send the username and gender to the server
+        }
 
         // Display room information and messages
         socket.on('receive-message', (message) => {
@@ -122,19 +140,19 @@
             // Display room info (which room the user is in)
             roomInfo.textContent = message;
 
+            // Remove the last message before adding a new one
+            if (messagesDiv.children.length > 0) {
+                messagesDiv.removeChild(messagesDiv.lastChild);
+            }
+
             // Display the message in the chat
             const newMessage = document.createElement("div");
             newMessage.classList.add("message");
 
-            // Randomly choose whether this is the sender or receiver's message
-            const isSender = Math.random() > 0.5;
-            if (isSender) {
-                newMessage.classList.add("sender");
-            } else {
-                newMessage.classList.add("receiver");
-            }
+            // Display the sender's gender along with their username
+            const genderIcon = gender === 'Boy' ? '👦' : '👧';
 
-            newMessage.innerHTML = `<span class="heart-icon">❤️</span>${message}`;
+            newMessage.innerHTML = `<span class="heart-icon">❤️</span>${genderIcon} ${username}: ${message}`;
             messagesDiv.appendChild(newMessage);
 
             // Scroll to the bottom of the chat window
@@ -144,9 +162,14 @@
         // Send message when user clicks send button
         document.getElementById("send-btn").onclick = function() {
             const message = document.getElementById("message-input").value;
-            socket.emit("send-message", message);
-            document.getElementById("message-input").value = "";
+            if (message) {
+                socket.emit("send-message", message); // Send message to server
+                document.getElementById("message-input").value = ""; // Clear input field
+            }
         };
+
+        // Ask for username and gender on page load
+        getUsernameAndGender();
     </script>
 
 </body>

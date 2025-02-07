@@ -2,13 +2,17 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const roomCapacity = 2; // Define how many users per room
+const roomCapacity = 2; // Number of users per room
 let rooms = {}; // Store rooms and users
+
+// Serve static files from the 'public' folder
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Handle when a user connects
 io.on('connection', (socket) => {
@@ -16,7 +20,7 @@ io.on('connection', (socket) => {
 
     let assignedRoom = null;
 
-    // Try to find an available room with space
+    // Find an available room with space
     for (let room in rooms) {
         if (rooms[room].length < roomCapacity) {
             assignedRoom = room;
@@ -30,18 +34,18 @@ io.on('connection', (socket) => {
         rooms[assignedRoom] = [];
     }
 
-    // Add the user to the assigned room
+    // Add user to the assigned room
     rooms[assignedRoom].push(socket.id);
     socket.join(assignedRoom);
     console.log(`User ${socket.id} joined ${assignedRoom}`);
 
-    // Inform users that they've been matched and are connected
+    // Inform the users that they are connected to a room
     socket.emit('receive-message', `You are connected to ${assignedRoom}. Start chatting!`);
     socket.to(assignedRoom).emit('receive-message', `User ${socket.id} joined the chat in ${assignedRoom}.`);
 
     // Handle sending messages within the room
     socket.on('send-message', (message) => {
-        io.to(assignedRoom).emit('receive-message', message); // Broadcast to the same room
+        io.to(assignedRoom).emit('receive-message', message); // Broadcast to the room
     });
 
     // Handle disconnection and clean up

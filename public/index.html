@@ -14,7 +14,6 @@
             justify-content: center;
             align-items: center;
             color: #fff;
-            flex-direction: column;
         }
 
         #chat-window {
@@ -91,41 +90,12 @@
             text-align: left;
             background-color: rgba(255, 0, 102, 0.3);
             margin-right: 40px;
-            border-radius: 10px;
         }
 
         .receiver {
             text-align: right;
             background-color: rgba(255, 204, 255, 0.3);
             margin-left: 40px;
-            border-radius: 10px;
-        }
-
-        .boy-profile {
-            background-color: #79c5ff;
-            padding: 8px;
-            border-radius: 10px;
-            border: 1px solid #fff;
-        }
-
-        .girl-profile {
-            background-color: #f7a4d4;
-            padding: 8px;
-            border-radius: 10px;
-            border: 1px solid #fff;
-        }
-
-        footer {
-            margin-top: 20px;
-            font-size: 14px;
-            text-align: center;
-            color: #fff;
-        }
-
-        footer a {
-            color: #ffb3c6;
-            text-decoration: none;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -140,62 +110,31 @@
         <div id="room-info"></div>
     </div>
 
-    <footer>
-        <p>Made with ❤️ by <a href="https://github.com" target="_blank">Nico Adajar</a></p>
-    </footer>
-
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let username = '';
-        let gender = '';
-        let userProfile = '';
-
-        // Ask the user for their username and gender when the page loads
-        function getUsernameAndGender() {
-            // Prompt for username
-            username = prompt("Please enter your username:");
-            if (!username) {
-                username = 'User_' + Math.floor(Math.random() * 1000);
-            }
-
-            // Prompt for gender
-            gender = prompt("Please select your gender (Boy/Girl):");
-            if (!gender) {
-                gender = 'Boy'; // Default to Boy if no input is given
-            }
-
-            socket.emit('set-username-and-gender', { username, gender }); // Send the username and gender to the server
-
-            // Set profile design based on gender
-            if (gender === 'Boy') {
-                userProfile = 'boy-profile';
-            } else if (gender === 'Girl') {
-                userProfile = 'girl-profile';
-            }
-        }
 
         // Display room information and messages
         socket.on('receive-message', (message) => {
             const messagesDiv = document.getElementById("messages");
             const roomInfo = document.getElementById("room-info");
-
+            
             // Display room info (which room the user is in)
             roomInfo.textContent = message;
-
-            // Remove the last message before adding a new one
-            if (messagesDiv.children.length > 0) {
-                messagesDiv.removeChild(messagesDiv.lastChild);
-            }
 
             // Display the message in the chat
             const newMessage = document.createElement("div");
             newMessage.classList.add("message");
 
-            // Display the sender's gender along with their username
-            const genderIcon = gender === 'Boy' ? '👦' : '👧';
+            // Randomly choose whether this is the sender or receiver's message
+            const isSender = Math.random() > 0.5;
+            if (isSender) {
+                newMessage.classList.add("sender");
+            } else {
+                newMessage.classList.add("receiver");
+            }
 
-            newMessage.innerHTML = `<span class="heart-icon">❤️</span><div class="${userProfile}">${genderIcon} ${username}: ${message}</div>`;
+            newMessage.innerHTML = `<span class="heart-icon">❤️</span>${message}`;
             messagesDiv.appendChild(newMessage);
 
             // Scroll to the bottom of the chat window
@@ -205,14 +144,9 @@
         // Send message when user clicks send button
         document.getElementById("send-btn").onclick = function() {
             const message = document.getElementById("message-input").value;
-            if (message) {
-                socket.emit("send-message", message); // Send message to server
-                document.getElementById("message-input").value = ""; // Clear input field
-            }
+            socket.emit("send-message", message);
+            document.getElementById("message-input").value = "";
         };
-
-        // Ask for username and gender on page load
-        getUsernameAndGender();
     </script>
 
 </body>

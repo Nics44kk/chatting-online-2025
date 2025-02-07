@@ -10,7 +10,6 @@ const io = socketIo(server);
 
 const roomCapacity = 2; // Number of users per room
 let rooms = {}; // Store rooms and users
-let userProfiles = {}; // Store usernames and genders by socket.id
 
 // Serve static files from the 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
@@ -18,12 +17,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Handle when a user connects
 io.on('connection', (socket) => {
     console.log('A user connected');
-    let assignedRoom = null;
 
-    // Set the username and gender for the user
-    socket.on('set-username-and-gender', (profile) => {
-        userProfiles[socket.id] = profile; // Store the profile information
-    });
+    let assignedRoom = null;
 
     // Find an available room with space
     for (let room in rooms) {
@@ -44,15 +39,13 @@ io.on('connection', (socket) => {
     socket.join(assignedRoom);
     console.log(`User ${socket.id} joined ${assignedRoom}`);
 
-    // Inform users that they've been matched and are connected
+    // Inform the users that they are connected to a room
     socket.emit('receive-message', `You are connected to ${assignedRoom}. Start chatting!`);
-    socket.to(assignedRoom).emit('receive-message', `${userProfiles[socket.id].username} joined the chat in ${assignedRoom}.`);
+    socket.to(assignedRoom).emit('receive-message', `User ${socket.id} joined the chat in ${assignedRoom}.`);
 
     // Handle sending messages within the room
     socket.on('send-message', (message) => {
-        const userProfile = userProfiles[socket.id];
-        const fullMessage = `${userProfile.username} (${userProfile.gender}): ${message}`;
-        io.to(assignedRoom).emit('receive-message', fullMessage); // Broadcast to the room
+        io.to(assignedRoom).emit('receive-message', message); // Broadcast to the room
     });
 
     // Handle disconnection and clean up

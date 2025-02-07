@@ -1,4 +1,5 @@
-// server.js
+// server.js (Backend)
+
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -12,7 +13,6 @@ let users = [];
 
 app.use(express.static("public"));
 
-// When a new user connects
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
@@ -28,12 +28,22 @@ io.on("connection", (socket) => {
     io.to(user2).emit("paired", { partner: user1 });
   }
 
-  // Handle chat messages
-  socket.on("chat_message", (message) => {
-    io.to(socket.id).emit("chat_message", message);  // Echo the message back
+  // When a user sends an offer
+  socket.on("offer", (data) => {
+    io.to(data.partner).emit("offer", data.offer);
   });
 
-  // When a user disconnects, remove them from the user list
+  // When a user sends an answer
+  socket.on("answer", (data) => {
+    io.to(data.partner).emit("answer", data.answer);
+  });
+
+  // When a user sends an ICE candidate
+  socket.on("ice_candidate", (candidateData) => {
+    io.to(candidateData.partner).emit("ice_candidate", candidateData.candidate);
+  });
+
+  // When a user disconnects
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
     users = users.filter((user) => user !== socket.id);

@@ -1,0 +1,40 @@
+/* src/styles.css */
+.video-call {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8e1f4;
+}
+
+.video-container {
+  display: flex;
+  justify-content: space-around;
+  width: 80%;
+  margin: 20px;
+}
+
+.video-container video {
+  width: 45%;
+  height: auto;
+  border-radius: 10px;
+  border: 2px solid #ff2a68;
+}
+
+.chat-box {
+  background: #ffcccb;
+  width: 60%;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #ff2a68;
+  display: flex;
+  flex-direction: column;
+}
+
+input {
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  background-color: #fff;
+}
